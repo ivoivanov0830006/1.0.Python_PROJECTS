@@ -31,8 +31,21 @@ background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "ba
 def main():
     run = True
     fps = 60
-
+    level = 1
+    lives = 5
+    play_font = pygame.font.SysFont("calibri", 50)
+    lost_font = pygame.font.SysFont("calibri", 70)
     clock = pygame.time.Clock()
+
+    def redraw_window():
+        win.blit(background, (0, 0))     # blit draws the background on coordinates 0, 0 (top left corner)
+        lives_label = play_font.render(f"Lives: {lives}", True, (255, 255, 255))  # draw text
+        level_label = play_font.render(f"Level: {level}", True, (255, 255, 255))
+
+        win.blit(lives_label, (10, 10))
+        win.blit(level_label, (width_main - level_label.get_width() - 10, 10))
+        pygame.display.update()
+
 
     while run:
         clock.tick(fps)
