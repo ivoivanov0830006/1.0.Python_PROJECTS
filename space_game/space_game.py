@@ -46,9 +46,9 @@ def main():
         win.blit(level_label, (width_main - level_label.get_width() - 10, 10))
         pygame.display.update()
 
-
     while run:
         clock.tick(fps)
+        redraw_window()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # clicking X button will close the game
