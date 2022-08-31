@@ -1,6 +1,7 @@
 import pygame
 import os
-
+import time
+import random
 pygame.font.init()
 
 width_main, height_main = 750, 650
@@ -108,14 +109,25 @@ class PlayerShip(Ship):
             else:
                 for obj in objs:
                     if laser.collision(obj):
+                        objs.remove(obj)
                         if laser in self.lasers:
                             self.lasers.remove(laser)
 
     def shoot(self):
         if self.cool_down_counter == 0:
-            laser = Laser(self.x, self.y, self.laser_img)
+            laser = Laser(self.x - 15, self.y - 40, self.laser_img)
             self.lasers.append(laser)
             self.cool_down_counter = 1
+
+    def draw(self, window):
+        super().draw(window)
+        self.health_bar(window)
+
+    def health_bar(self, window):
+        pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get_height() + 10,
+                                               self.ship_img.get_width(), 5))
+        pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get_height() + 10,
+                                               self.ship_img.get_width() * (self.health / self.max_health), 5))
 
 
 # ----------------------------------------------Enemy Ship--------------------------------------------------
@@ -158,8 +170,9 @@ def main():
 
     enemies = []
     wave_length = 5
-    enemy_velocity = 3
+    enemy_velocity = 2
     player_velocity = 12
+    enemy_laser_velocity = 10
     laser_velocity = 15
 
     player = PlayerShip(300, 500)
@@ -168,6 +181,8 @@ def main():
 
     lost = False
     lost_count = 0
+
+    lost = False
 
     def redraw_window():
         win.blit(background, (0, 0))     # blit draws the background on coordinates 0, 0 (top left corner)
@@ -190,7 +205,24 @@ def main():
 
     while run:
         clock.tick(fps)
-        redraw_window()
+
+        if lives <= 0 or player.health <= 0:
+            lost = True
+            lost_count += 1
+
+        if lost:
+            if lost_count > fps * 2:     # if we pass 3 sec timer,
+                run = False              # quit the game
+            else:
+                continue                # go back to beginning of the loop without doing anything BELOW ! ! !
+
+        if len(enemies) == 0:
+            level += 1
+            wave_length += 5
+            for i in range(wave_length):
+                enemy = EnemyShips(random.randrange(50, width_main - 100), random.randrange(-1500, -100), random.
+                                   choice(["red", "blue", "green"]))
+                enemies.append(enemy)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # clicking X button will close the game
@@ -204,19 +236,27 @@ def main():
             player.x += player_velocity
         if keys[pygame.K_UP] and player.y - player_velocity > 0:         # move up + limit on up side
             player.y -= player_velocity
-        if keys[pygame.K_DOWN] and player.y + player_velocity < height_main - player.get_height():  # move down + limit
+        if keys[pygame.K_DOWN] and player.y + player_velocity < height_main - player.get_height() - 15:  # move down + limit
             player.y += player_velocity
         if keys[pygame.K_SPACE]:
             player.shoot()
 # ------------------------------------------------------------------------------------------------------------
         for enemy in enemies[:]:    # made copy of list, so while we are looping there will be no issues
             enemy.move(enemy_velocity)
-            enemy.move_lasers(laser_velocity, player)  # move it with velocity .... and check if hits the player
-            if enemy.y + enemy.get_height() > height_main:
+            enemy.move_lasers(enemy_laser_velocity, player)  # move it with velocity .... and check if hits the player
+
+            if random.randrange(0, 2*60) == 1:
+                enemy.shoot()
+
+            if collide(enemy, player):
+                player.health -= 10
+                enemies.remove(enemy)
+            elif enemy.y + enemy.get_height() > height_main:
                 lives -= 1
                 enemies.remove(enemy)  # removes object from the list
 
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
+        redraw_window()
 
 
 main()
