@@ -1,6 +1,5 @@
 import pygame
 import os
-import time
 import random
 pygame.font.init()
 
@@ -8,7 +7,7 @@ width_main, height_main = 750, 650
 win = pygame.display.set_mode((width_main, height_main))
 pygame.display.set_caption("Space Game Tutorial")
 
-# ---------------------------------------Loading Images--------------------------------------------
+# -------------------loading images----------------------
 
 # Enemy ships
 red_space_ship = pygame.image.load(os.path.join("assets", "pixel_ship_red_small.png"))
@@ -164,7 +163,7 @@ def main():
     run = True
     fps = 60
     level = 1
-    lives = 5
+    lives = 50
     play_font = pygame.font.SysFont("calibri", 50)
     lost_font = pygame.font.SysFont("calibri", 70)
 
@@ -175,7 +174,7 @@ def main():
     enemy_laser_velocity = 10
     laser_velocity = 15
 
-    player = PlayerShip(300, 500)
+    player = PlayerShip(600, 500)
 
     clock = pygame.time.Clock()
 
@@ -205,6 +204,7 @@ def main():
 
     while run:
         clock.tick(fps)
+        redraw_window()
 
         if lives <= 0 or player.health <= 0:
             lost = True
@@ -226,7 +226,7 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # clicking X button will close the game
-                run = False
+                quit()      # if want to get us in main menu again it:     run = False
 
 # ----------------------------------------------key binds----------------------------------------------------
         keys = pygame.key.get_pressed()
@@ -236,7 +236,7 @@ def main():
             player.x += player_velocity
         if keys[pygame.K_UP] and player.y - player_velocity > 0:         # move up + limit on up side
             player.y -= player_velocity
-        if keys[pygame.K_DOWN] and player.y + player_velocity < height_main - player.get_height() - 15:  # move down + limit
+        if keys[pygame.K_DOWN] and player.y + player_velocity < height_main - player.get_height() - 15:
             player.y += player_velocity
         if keys[pygame.K_SPACE]:
             player.shoot()
@@ -247,7 +247,6 @@ def main():
 
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
-
             if collide(enemy, player):
                 player.health -= 10
                 enemies.remove(enemy)
@@ -256,7 +255,24 @@ def main():
                 enemies.remove(enemy)  # removes object from the list
 
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
-        redraw_window()
+
+# --------------------------------------------Main Menu -----------------------------------------------------
 
 
-main()
+def main_menu():
+    title_font = pygame.font.SysFont("callibri", 70)
+    run = True
+    while run:
+        win.blit(background, (0, 0))
+        title_label = title_font.render("Press the mouse to begin...", True, (255, 255, 255))
+        win.blit(title_label, (width_main / 2 - title_label.get_width()/2, 350))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                main()
+    pygame.quit()
+
+
+main_menu()
