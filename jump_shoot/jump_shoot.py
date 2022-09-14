@@ -16,16 +16,12 @@ clock = pygame.time.Clock()
 
 x = 50
 y = 420
-player_width = 64
-player_height = 64
+player_width = 40
+player_height = 60
 velocity = 15
 
 is_jump = False
 jump_count = 10
-lef = False
-right = False
-walk_count = 0
-
 
 def redrawGameWindow():
     global walk_count
