@@ -8,3 +8,27 @@
     <title>Avon WEB</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+    
+<body>
+    <!-- ------------------------------------------------------------ -->
+    <!-- -------------------------- HEADER ------------------------ -->
+    <!-- ------------------------------------------------------------ -->
+
+    <header>
+        <h1 class="logo1">!</h1>
+        <h2 class="logo2">VON</h2>
+        <h3 class="trademark">powered by Avon</h3>
+        <nav class="navigation">
+            <a href="indexHome.html">Home</a>
+            <a href="indexContact.html">Contacts</a>
+            <a href="indexShop.html">Shop</a>
+            <button class="btnLoginOpen">Log In</button>
+            <button class="toggleBgButton"><ion-icon name="contrast-outline"></ion-icon></button>
+        </nav>
+    </header>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
