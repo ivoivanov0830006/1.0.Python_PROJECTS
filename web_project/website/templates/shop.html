@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Avon WEB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleShop.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1 class="logo1">!</h1>
+        <h2 class="logo2">VON</h2>
+        <h3 class="trademark">powered by Avon</h3>
+        <nav class="navigation">
+            <a href="{{ url_for('views.home') }}">Home</a>
+            <button class="btnLogin-popup">Log In</button>
+            <button class="toggleBgButton"><ion-icon name="contrast-outline"></ion-icon></button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <h2>All products</h2>
+            <div class="shopping">
+                <button class="cartButton"><ion-icon name="bag-outline"></ion-icon></button>
+                <span class="quantity">0</span>
+            </div>
+        </div>
+        <div class="list"></div>
+    </div>
+        
+    <div class="cart">
+        <div class="content">
+            <h2>Your Shopping Cart</h2>
+            <button class="closeShopping"><ion-icon name="close-outline"></ion-icon></button>
+        </div>
+        <ul class="listCart"></ul>
+        <h1>Total Cost</h1>
+        <div class="checkout">
+            <button class="pay"><ion-icon name="wallet-outline"></ion-icon></button>
+            <div class="total">0</div>
+
+    </div>
+    
+
+    <script src="{{ url_for('static', filename='scriptShop.js') }}"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
+
+
