@@ -1,17 +1,102 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import sqlite3
+from .models import User  # Import the User model
+from flask_bcrypt import Bcrypt, check_password_hash
 
+# Create the authentication blueprint
 auth = Blueprint("auth", __name__)
 
-@auth.route('/login', methods=["GET", "POST"])
+# SQLite database setup (You can use a more robust database like SQLAlchemy)
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+# Create a table to store user information if it doesn't exist
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL
+    )
+""")
+conn.commit()
+
+# Initialize bcrypt
+bcrypt = Bcrypt()
+
+
+def authenticate_user(email, password):
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password, password):
+        return user
+    return None
+
+
+@auth.route('/indexLoginR')
+def index_login():
+    return render_template("indexLoginR.html")
+
+
+@auth.route('/indexRegisterR')
+def index_register():
+    return render_template("indexRegisterR.html")
+
+
+@auth.route('/logout')
+def logout():
+    session.clear()
+    flash("Logged out successfully", "success")
+    return redirect(url_for("views.home"))  # Redirect to the home page after logout
+
+
+@auth.route('/login', methods=["POST"])
 def login():
-    data = request.form
-    print(data)
-    return render_template("index.html", bolean=True)
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-@auth.route('/register', methods=["GET", "POST"])
+        user = authenticate_user(email, password)
+
+        if user:
+            # Store user ID in the session to keep the user logged in
+            session['user_id'] = user.id
+            flash("Login successful", "success")
+            print("Login successful")
+            return redirect(url_for("auth.index_login"))  # Redirect to the dashboard or a protected page
+        else:
+            flash("Login failed. Invalid credentials.", "danger")
+
+    return render_template("index.html")
+
+
+@auth.route('/register', methods=["POST"])
 def register():
-    data = request.form
-    print(data)
-    # return render_template("register.html")
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-# Add more authentication routes as needed
+        # Hash the password using bcrypt
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+        # Create a new database connection and cursor for this request
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+                           (username, email, hashed_password))
+            conn.commit()
+            flash("Registration successful. You can now log in.", "success")
+            print("Register successful")
+            return redirect(url_for("auth.index_register"))
+        except sqlite3.Error as e:
+            # Handle any potential database errors here
+            flash(f"Error: {str(e)}", "danger")
+        finally:
+            # Close the database connection and cursor
+            cursor.close()
+            conn.close()
+
+    return render_template("index.html")
+
