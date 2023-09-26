@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Avon WEB</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleIndex.css') }}">
 </head>
-    
+
 <body>
     <!-- ------------------------------------------------------------ -->
-    <!-- -------------------------- HEADER ------------------------ -->
+    <!-- -------------------------- HEADER -------------------------- -->
     <!-- ------------------------------------------------------------ -->
 
     <header>
@@ -19,13 +19,86 @@
         <h2 class="logo2">VON</h2>
         <h3 class="trademark">powered by Avon</h3>
         <nav class="navigation">
-            <a href="indexHome.html">Home</a>
-            <a href="indexContact.html">Contacts</a>
-            <a href="indexShop.html">Shop</a>
-            <button class="btnLoginOpen">Log In</button>
+            <a href="{{ url_for('views.contacts') }}">Contacts</a>
+            <a href="{{ url_for('views.shop') }}">Shop</a>
+            <a href="">News</a>
+
+            <button id="loginButton" class="btnLoginOpen">Log In</button>
+            <button id="logoutButton" class="btnLogout" onclick="logout()" style="display: none;">Log Out</button>
+
+            <span id="usernameDisplay" style="display: none">Welcome</span>
             <button class="toggleBgButton"><ion-icon name="contrast-outline"></ion-icon></button>
         </nav>
     </header>
+
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- -------------------------- WRAPPER ------------------------- -->
+    <!-- ------------------------------------------------------------ -->
+
+    <div class="wrapper-container">
+        <div class="wrapper">
+            <span class="btnLoginClose"><ion-icon name="remove-outline"></ion-icon></span>
+            <div class="login form-box">
+                <h2>Welcome</h2>
+                <form action="{{ url_for('auth.login') }}" method="post">
+                    <input type="hidden" name="action" value="login">
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                        <input type="text" name="username" required>
+                        <label>Username</label>
+                    </div>
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                        <input type="password" name="password" required>
+                        <label>Password</label>
+                    </div>
+                    <div class="remember-forgot">
+                        <label><input type="checkbox"> Remember me</label>
+                        <a href="#">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn">Log In</button>
+                    <div class="login-register">
+                        <p>Don't have an account?
+                            <a href="#" class="register-link">Register now</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <div class="register form-box">
+                <h2>Registration</h2>
+                <form action="{{ url_for('auth.register') }}" method="post">
+                    <input type="hidden" name="action" value="register">
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                        <input type="text" name="username" required>
+                        <label>Username</label>
+                    </div>
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
+                        <input type="email" name="email" required>
+                        <label>Email</label>
+                    </div>
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                        <input type="password" name="password" required>
+                        <label>Password</label>
+                    </div>
+                    <div class="remember-forgot">
+                        <label><input type="checkbox"> I agree to the terms & conditions</label>
+                    </div>
+                    <button type="submit" class="btn">Register</button>
+                    <div class="login-register">
+                        <p>Already have an account?
+                            <a href="#" class="login-link">Log In</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
