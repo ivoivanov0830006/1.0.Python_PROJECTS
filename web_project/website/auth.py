@@ -19,38 +19,52 @@ cursor.execute("""
         password TEXT NOT NULL
     )
 """)
+
+# Find the highest ID value
+cursor.execute("SELECT MAX(id) FROM users")
+max_id = cursor.fetchone()[0]
+
 conn.commit()
+conn.close()
 
 # Initialize bcrypt
 bcrypt = Bcrypt()
 
 
 def authenticate_user(username, password):
-    # Print all users in the database (before the query)
-    all_users = User.query.all()
-    print("All users in the database:")
-    for user in all_users:
-        print(f"Username: {user.username}, Password: {user.password}")
-
     print(f"Authenticating user: {username}")
-    user = User.query.filter_by(username=username).first()
-    if user:
-        print(f"User found: {user.username}")
-        if user.password == password:
-            print("Password matches")
-            return user
-        else:
-            print("Password does not match")
-    else:
-        print("User not found")
 
-    # Print all users in the database (after the query)
-    all_users = User.query.all()
-    print("All users in the database after query:")
-    for user in all_users:
-        print(f"Username: {user.username}, Password: {user.password}")
+    # # Create a new database connection and cursor for this request
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            user = User()
+            user.id, user.username, user.email, user.password = user_data
+            print(f"User found: {user.username}")
+
+            if user.password == password:
+                print("Password matches")
+                return user
+            else:
+                print("Password does not match")
+        else:
+            print("User not found")
+
+    except sqlite3.Error as e:
+        print(f"Database error: {str(e)}")
+
+    finally:
+        # Close the database connection and cursor
+        cursor.close()
+        conn.close()
 
     return None
+
 
 @auth.route('/indexLoginR')
 def index_login():
@@ -65,7 +79,7 @@ def index_register():
 @auth.route('/logout')
 def logout():
     session.clear()
-    flash("Logged out successfully", "success")
+    print("Logged out successfully")
     return redirect(url_for("views.home"))  # Redirect to the home page after logout
 
 
@@ -80,11 +94,12 @@ def login():
         if user:
             # Store user ID in the session to keep the user logged in
             session['user_id'] = user.id
-            flash("Login successful", "success")
+            session['user_name'] = user.username
+
             print("Login successful")
             return redirect(url_for("auth.index_login"))  # Redirect to the dashboard or a protected page
         else:
-            flash("Login failed. Invalid credentials.", "danger")
+            print("Login failed")
 
     return render_template("index.html")
 
