@@ -30,78 +30,57 @@
                     <p class="id">#032213</p>
                 </div>
                 <div class="profileButtons">
-                    <button class="edit" onclick="showProducts()">Edit Profile</button>
-                    <button class="edit" onclick="showProducts()">My Products</button>
-                    <button class="edit" onclick="showWishlist()">Wishlist</button>
+                    <button class="editBtn">Edit Profile</button>
+                    <button class="productsBtn">My Products</button>
+                    <button class="wishBtn">Wishlist</button>
                     
                     <!-- Add more buttons for other actions -->
                 </div>
             </div>
 
-            <div class="profileContent">
-                <div class="wrapper"> 
-                    <span class="btnLoginClose"><ion-icon name="remove-outline"></ion-icon></span>
-                    <div class="password form-box">
-                        <h2>Password Change</h2>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-                        <form action="{{ url_for('login') }}" method="post">
-                            <div class="input-box">
-                                <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
-                                <input type="email" required>
-                                <label>Old Password</label>
-                            </div>
-                            <div class="input-box">
-                                <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
-                                <input type="password" required>
-                                <label>New Password</label>
-                            </div>
-                            <button type="submit" class="btn">Log In</button>
-                            <div class="next"><!--<div class="login-register"><!-->
-                                <p>Don't have an account?
-                                    <a href="#" class="register-link">Register now</a>
-                                </p> 
-                            </div>
-                        </form>
-                    </div>
-        
-                    <div class="email form-box">
-                        <h2>Email Change</h2>
-                        <form action="{{ url_for('register') }}" method="post">
-        
-                            <div class="input-box">
-                                <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
-                                <input type="email" required>
-                                <label>Old Email</label>
-                            </div>
-                            <div class="input-box">
-                                <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
-                                <input type="password" required>
-                                <label>New Email</label>
-                            </div>
-                            <button type="submit" class="btn">Apply</button>
-                             <!--<div class="login-register"> <!-->
-                                <p>Already have an account?
-                                    <a href="#" class="login-link">Log In</a>
-                                </p> 
-                            </div>
-                        </form>
-                    </div>
+        <h4 class="title">Edit Profile</h4> 
+
+        <div class="profileContent">
+            <div class="wrapper"> 
+                <span class="btnLoginClose"><ion-icon name="remove-outline"></ion-icon></span>
+                <div class="password form-box">
+                    <h2>Password Change</h2>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+                    <form action="{{ url_for('login') }}" method="post">
+                        <div class="input-box">
+                            <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
+                            <input type="email" required>
+                            <label>Old Password</label>
+                        </div>
+                        <div class="input-box">
+                            <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                            <input type="password" required>
+                            <label>New Password</label>
+                        </div>
+                        <button type="submit" class="btn">Save Changes</button>
+                        <div class="next">
+                            <a href="#" class="email-change-link">NEXT</a>
+                        </div>
+                    </form>
                 </div>
-
-
-
-                <h4 class="title">Edit Profile</h4> 
-                <div class="content">
-                    <form id="editProfileForm">
-                        <label for="oldPassword">Old Password:</label>
-                        <input type="password" id="oldPassword" name="oldPassword" required>
     
-                        <label for="newPassword">New Password:</label>
-                        <input type="password" id="newPassword" name="newPassword" required>
+                <div class="email form-box" hidden>
+                    <h2>Email Change</h2>
+                    <form action="{{ url_for('register') }}" method="post">
     
-                        <label for="email">Change Email:</label>
-                        <input type="email" id="email" name="email" required>
-    
-                        <button type="submit" class="saveButton">Save Changes</button>
+                        <div class="input-box">
+                            <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
+                            <input type="email" required>
+                            <label>Old Email</label>
+                        </div>
+                        <div class="input-box">
+                            <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                            <input type="password" required>
+                            <label>New Email</label>
+                        </div>
+                        <button type="submit" class="btn">Apply</button>
+                        <div class="next">
+                            <a href="#" class="password-change-link">BACK</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -113,4 +92,5 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>
+
 
