@@ -1,4 +1,3 @@
-
 //---------------- WRAPPER POPUP --------------- //
 document.addEventListener('DOMContentLoaded', function() {
     const wrapperContainer = document.querySelector('.profileContent');
