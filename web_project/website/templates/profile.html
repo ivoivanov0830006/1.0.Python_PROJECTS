@@ -47,18 +47,23 @@
                         <h2>Password Change</h2>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
                         <form action="{{ url_for('login') }}" method="post">
                             <div class="input-box">
-                                <span class="icon"><ion-icon name="at-outline"></ion-icon></span>
+                                <span class="icon"><ion-icon name="eye-off-outline"></ion-icon></span>
                                 <input type="email" required>
                                 <label>Old Password</label>
                             </div>
                             <div class="input-box">
-                                <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                                <span class="icon"><ion-icon name="eye-off-outline"></ion-icon></span>
                                 <input type="password" required>
                                 <label>New Password</label>
                             </div>
+                            <div class="input-box">
+                                <span class="icon"><ion-icon name="eye-off-outline"></ion-icon></span>
+                                <input type="password" required>
+                                <label>Confirm Password</label>
+                            </div>
                             <button type="submit" class="btn">Save Changes</button>
                             <div class="next">
-                                <a href="#" class="email-change-link">NEXT</a>
+                                <a href="#" class="email-change-link">Email Change ></a>
                             </div>
                         </form>
                     </div>
@@ -77,9 +82,14 @@
                                 <input type="password" required>
                                 <label>New Email</label>
                             </div>
-                            <button type="submit" class="btn">Apply</button>
+                            <div class="input-box">
+                                <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+                                <input type="password" required>
+                                <label>Confirm Email</label>
+                            </div>
+                            <button type="submit" class="btn">Save Changes</button>
                             <div class="next">
-                                <a href="#" class="password-change-link">BACK</a>
+                                <a href="#" class="password-change-link">< Password Change</a>
                             </div>
                         </form>
                     </div>
