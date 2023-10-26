@@ -213,16 +213,26 @@ body::-webkit-scrollbar {
 /* ------------------------------------------------------------ */
 /* ---------------------- PROFILE CONTENT --------------------- */
 /* ------------------------------------------------------------ */
-
 .profileContent {
-    margin-left: 50%; /* Adjust the margin to match button width */
+    width: 800px;
 }
 
-.title {
-    font-size: 2.5em;
+h4 {
+    position:absolute;
+    margin-top: 200px;
+    margin-left: 150px;
+    font-size: 3.5em;
     color: white;
-    font-weight: 200;
-    margin-bottom: 20px;
+    font-weight: 400;
+}
+
+h5{
+    position:absolute;
+    margin-top: 270px;
+    margin-left: 190px;
+    font-size: 3.5em;
+    color: white;
+    font-weight: 400;
 }
 
 /* ------------------------------------------------------------ */
@@ -281,51 +291,45 @@ a:hover {
     transition: transform .3s ease, height .2s ease;
 }
 
-.profileContent.active-popup .wrapper {
+.wrapper.active-popup {
     height: 500px;
-    width: 600px;
     transform: scale(1);
     transition: .4s ease;
 }
 
-.profileContent.active-popup.atPassword .wrapper {
-    height: 550px;
-
+.wrapper.active-popup.atPassword {
     transition: .5s ease;
 }
 
-.profileContent.active-popup {
+.wrapper.active-popup {
     transform: scale(1);
 }
 
-.profileContent .form-box {
+.wrapper .form-box {
     width: 100%;
-}
-
-.profileContent .form-box.atEmail {
     transition: transform .18s ease;
     transform: translateX(0);
 }
 
-.profileContent.atEmail .form-box.login {
+.wrapper .form-box.atPassword {
     transition: none;
     transform: translateX(-450px);
 }
 
-.profileContent .form-box.register {
+.wrapper .form-box.register {
     position: absolute;
     transition: none;
     padding: 50px;
     transform: translateX(450px);
 }
 
-.profileContent.atEmail .form-box.register {
+.wrapper.atEmail .form-box.register {
     transition: transform .18s ease;
     transform: translateX(0);
 }
 
 .wrapper p {
-    font-size: 15px;
+    font-size: 25px;
     color: white;
 }
 
@@ -357,7 +361,7 @@ a:hover {
     width: 100%;
     height: 30px;
     border-bottom: 1px solid white;
-    margin: 30px 0;
+    margin: 40px 0;
 }
 
 .input-box label {
@@ -398,6 +402,15 @@ a:hover {
     font-size: 2em;
     color: white;
     top: -10px;
+}
+.next {
+    font-size: 1.5em;
+    margin-top: 30px;
+}
+
+.next .email-change-link {
+    display: flex;
+    justify-content: right;
 }
 
 .btn {
