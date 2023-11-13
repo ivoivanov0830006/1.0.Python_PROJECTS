@@ -436,22 +436,6 @@ body::-webkit-scrollbar {
     display: none;
 }
 
-
-@media (max-width: 768px) {
-    /* Styles for small screens */
-    .profileButtons {
-        width: 70%; /* Adjust to full width */
-    }
-    .profileContent {
-        margin-left: 2%; /* Remove left margin */
-        min-width: auto; /* Allow content to adapt to screen width */
-        min-height: auto; /* Allow content to adapt to screen height */
-    }
-    .username {
-        font-size: 16px; /* Adjust font size for smaller screens */
-    }
-}
-
 @media (min-width: 769px) and (max-width: 1024px) {
     /* Styles for medium-sized screens */
     .profileButtons {
