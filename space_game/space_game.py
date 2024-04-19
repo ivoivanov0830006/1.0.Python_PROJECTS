@@ -269,28 +269,29 @@ def play():
         if keys[pygame.K_SPACE]:
             player.shoot()
 # ------------------------------------------------------------------------------------------------------------------
-        for enemy in enemies[:]:    # made copy of list, so while we are looping there will be no issues
+         for enemy in enemies[:]:    # made copy of list, so while we are looping there will be no issues
             enemy.move(enemy_velocity)
             enemy.move_lasers(enemy_laser_velocity, player)  # move it with velocity .... and check if hits the player
-
+  
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
-
+  
+            for laser in player.lasers[:]:  # Check collision between player's lasers and enemies
+                if laser.collision(enemy):
+                    points += 100  # Increase points by 100 when player's laser hits an enemy
+                    player.lasers.remove(laser)  # Remove the laser
+                    enemies.remove(enemy)  # Remove the enemy
+                    break  # Break the loop since an enemy is hit by the laser
+  
             if collide(enemy, player):
                 lives -= 1
-                points += 100
                 enemies.remove(enemy)
-
+                points += 100
+  
             elif enemy.y + enemy.get_height() > height_main:
-                lives -= 1
-                if points == 0:
-                    points += 0
-                else:
-                    points -= 100
-                enemies.remove(enemy)  # removes object from the list
-
+                enemies.remove(enemy)
+  
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
-
 # -------------------------------------------- main menu ------------------------------------------------------------
 
 
