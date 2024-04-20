@@ -34,10 +34,14 @@ background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "ba
 play_button = pygame.image.load(os.path.join("assets", "play_button_white.png"))
 exit_button = pygame.image.load(os.path.join("assets", "exit_button_white.png"))
 
+play_button_hover = pygame.image.load(os.path.join("assets", "play_button.png"))
+exit_button_hover = pygame.image.load(os.path.join("assets", "exit_button.png"))
+
 
 class Button:
-    def __init__(self, image, pos, text_input, font, base_color):
+    def __init__(self, image, hover_image, pos, text_input, font, base_color):
         self.image = image
+        self.hover_image = hover_image
         self.x_pos = pos[0]
         self.y_pos = pos[1]
         self.font = font
@@ -49,8 +53,10 @@ class Button:
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
 
-    def update(self, screen):
-        if self.image is not None:
+    def update(self, screen, mouse_pos):
+        if self.rect.collidepoint(mouse_pos):
+            screen.blit(self.hover_image, self.rect)
+        else:
             screen.blit(self.image, self.rect)
         screen.blit(self.text, self.text_rect)
 
@@ -186,12 +192,17 @@ def collide(obj1, obj2):
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))
 
 
+def hit(self):
+    print("hit")
+
+
 def play():
     run = True
     fps = 60
+    points = 0
     level = 0
     lives = 10
-    points = 0
+
     play_font = pygame.font.SysFont("calibri", 50)
     lost_font = pygame.font.SysFont("calibri", 70)
 
@@ -269,29 +280,43 @@ def play():
         if keys[pygame.K_SPACE]:
             player.shoot()
 # ------------------------------------------------------------------------------------------------------------------
-         for enemy in enemies[:]:    # made copy of list, so while we are looping there will be no issues
+        enemies_to_remove = []
+
+        # Iterate over enemies
+        for enemy in enemies:
+            print(len(enemies))
             enemy.move(enemy_velocity)
+
             enemy.move_lasers(enemy_laser_velocity, player)  # move it with velocity .... and check if hits the player
-  
+
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
-  
-            for laser in player.lasers[:]:  # Check collision between player's lasers and enemies
+
+            for laser in player.lasers[:]:  # Create a copy of the list
                 if laser.collision(enemy):
                     points += 100  # Increase points by 100 when player's laser hits an enemy
                     player.lasers.remove(laser)  # Remove the laser
-                    enemies.remove(enemy)  # Remove the enemy
+                    enemies_to_remove.append(enemy)  # Add the enemy to the removal list
                     break  # Break the loop since an enemy is hit by the laser
-  
             if collide(enemy, player):
                 lives -= 1
-                enemies.remove(enemy)
+                player.health -= 10  # Decrease player health
+                enemies_to_remove.append(enemy)
                 points += 100
-  
+                player.draw(win)  # Update health bar
+
             elif enemy.y + enemy.get_height() > height_main:
-                enemies.remove(enemy)
-  
+                enemies_to_remove.append(enemy)  # Add the enemy to the removal list
+
+        # Remove enemies that need to be removed
+        for enemy in enemies_to_remove:
+            enemies.remove(enemy)
+
+        # Clear the list of enemies to remove
+        enemies_to_remove.clear()
+
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
+
 # -------------------------------------------- main menu ------------------------------------------------------------
 
 
@@ -306,16 +331,16 @@ def main_menu():
         title_label = title_font.render("MAIN MENU", True, (231, 231, 231))
         win.blit(title_label, (width_main / 2 - title_label.get_width() / 2, 50))
 
-        play_but = Button(play_button, pos=(250, 270), text_input=" ", font=title_font, base_color="White")
+        play_but = Button(play_button, play_button_hover, pos=(250, 270), text_input=" ", font=title_font, base_color="White")
         play_label = other_text_font.render("PLAY", True, (231, 231, 231))
         win.blit(play_label, (350, 250))
 
-        quit_but = Button(exit_button, pos=(250, 480), text_input=" ", font=title_font, base_color="White")
+        quit_but = Button(exit_button, exit_button_hover, pos=(250, 480), text_input=" ", font=title_font, base_color="White")
         play_label = other_text_font.render("QUIT", True, (231, 231, 231))
         win.blit(play_label, (350, 460))
 
         for button in [play_but, quit_but]:
-            button.update(win)
+            button.update(win, menu_mouse_pos)
 
         pygame.display.update()
 
