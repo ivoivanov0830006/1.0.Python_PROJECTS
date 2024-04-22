@@ -88,7 +88,7 @@ class Laser:
 
 
 class Ship:
-    COOLDOWN = 10     # it means 1/6 sec, because fps = 60
+    COOL_DOWN = 10     # it means 1/6 sec, because fps = 60
 
     def __init__(self, x, y, health=100):
         self.x = x
@@ -105,7 +105,7 @@ class Ship:
             laser.draw(window)
 
     def move_lasers(self, velocity, obj):
-        self.cooldown()
+        self.cool_down()
         for laser in self.lasers:
             laser.move(velocity)
             if laser.off_screen(height_main):
@@ -114,8 +114,8 @@ class Ship:
                 obj.health -= 10
                 self.lasers.remove(laser)
 
-    def cooldown(self):
-        if self.cool_down_counter >= self.COOLDOWN:
+    def cool_down(self):
+        if self.cool_down_counter >= self.COOL_DOWN:
             self.cool_down_counter = 0
         elif self.cool_down_counter > 0:
             self.cool_down_counter += 1
@@ -129,23 +129,32 @@ class Ship:
 
 class PlayerShip(Ship):
     def __init__(self, x, y, health=100):
-        super().__init__(x, y, health)     # deinitialization method
+        super().__init__(x, y, health)     # de-initialisation method
         self.ship_img = yellow_space_ship
         self.laser_img = yellow_laser
         self.mask = pygame.mask.from_surface(self.ship_img)  # to describe is there any collision with our object
         self.max_health = health
+        self.points = 0
 
     def move_lasers(self, velocity, objs):
-        self.cooldown()
-        for laser in self.lasers:                   # for each laser the player has
-            laser.move(velocity)                    # move the laser
-            if laser.off_screen(height_main):       # if laser off the screen
-                self.lasers.remove(laser)           # remove it
-            else:                                   # if not
-                for obj in objs:                    # for each object in objects list,
-                    if laser.collision(obj):        # if laser collide with object
-                        objs.remove(obj)            # delete the object
-                        self.lasers.remove(laser)   # delete the laser
+        self.cool_down()
+        for laser in self.lasers:
+            laser.move(velocity)
+            if laser.off_screen(height_main):
+                self.lasers.remove(laser)
+            else:
+                for obj in objs:
+                    if laser.collision(obj):
+                        if laser in self.lasers:
+                            self.lasers.remove(laser)
+                            print("Enemy ship hit!")  # Print a message when enemy ship is hit
+                            obj.health -= 20  # Decrease enemy ship's health by 20
+                            print(f"Enemy ship's health: {obj.health}")  # Print updated health
+                            if obj.health == 0:
+                                objs.remove(obj)
+                                print("Enemy ship destroyed!")  # Print a message when enemy ship is destroyed
+                                self.points += 10  # Increase points by 10 when an enemy ship is destroyed
+                                print(f"Points: {self.points}")  # Print updated points
 
     def shoot(self):
         if self.cool_down_counter == 0:
@@ -166,14 +175,14 @@ class PlayerShip(Ship):
 
 class EnemyShips(Ship):
     color_map = {
-                "red": (red_space_ship, red_laser),
-                "green": (green_space_ship, green_laser),
-                "blue": (blue_space_ship, blue_laser)
+                "red": (red_space_ship, red_laser, 120),
+                "green": (green_space_ship, green_laser, 60),
+                "blue": (blue_space_ship, blue_laser, 20)
                 }
 
-    def __init__(self, x, y, color, health=100):
+    def __init__(self, x, y, color, health=None):
         super().__init__(x, y, health)
-        self.ship_img, self.laser_img = self.color_map[color]
+        self.ship_img, self.laser_img, self.health = self.color_map[color]
         self.mask = pygame.mask.from_surface(self.ship_img)
 
     def move(self, velocity):
@@ -186,20 +195,17 @@ class EnemyShips(Ship):
             self.cool_down_counter = 1
 
 
+# -----------------------------------------------------------------------------------------------------------
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
     offset_y = obj2.y - obj1.y
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))
-
-
-def hit(self):
-    print("hit")
+# -----------------------------------------------------------------------------------------------------------
 
 
 def play():
     run = True
     fps = 60
-    points = 0
     level = 0
     lives = 10
 
@@ -210,7 +216,7 @@ def play():
     wave_length = 5
     enemy_velocity = 2
     player_velocity = 12
-    enemy_laser_velocity = 10
+    enemy_laser_velocity = 5
     laser_velocity = 15
 
     player = PlayerShip(600, 500)
@@ -224,7 +230,7 @@ def play():
         win.blit(background, (0, 0))     # blit draws the background on coordinates 0, 0 (top left corner)
         lives_label = play_font.render(f"Lives: {lives}", True, (255, 255, 255))     # draw text
         level_label = play_font.render(f"Level: {level}", True, (255, 255, 255))
-        points_label = play_font.render(f"Points: {points}", True, (255, 255, 255))
+        points_label = play_font.render(f"Points: {player.points}", True, (255, 255, 255))  # Draw points label
 
         win.blit(lives_label, (10, 10))
         win.blit(level_label, (width_main - level_label.get_width() - 10, 10))
@@ -257,7 +263,7 @@ def play():
 
         if len(enemies) == 0:
             level += 1
-            wave_length += 5
+            wave_length += 2
             for i in range(wave_length):
                 enemy = EnemyShips(random.randrange(50, width_main - 100), random.randrange(-1500, -100), random.
                                    choice(["red", "blue", "green"]))
@@ -280,40 +286,39 @@ def play():
         if keys[pygame.K_SPACE]:
             player.shoot()
 # ------------------------------------------------------------------------------------------------------------------
-        enemies_to_remove = []
-
         # Iterate over enemies
         for enemy in enemies:
-            print(len(enemies))
             enemy.move(enemy_velocity)
-
             enemy.move_lasers(enemy_laser_velocity, player)  # move it with velocity .... and check if hits the player
 
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
 
-            for laser in player.lasers[:]:  # Create a copy of the list
-                if laser.collision(enemy):
-                    points += 100  # Increase points by 100 when player's laser hits an enemy
-                    player.lasers.remove(laser)  # Remove the laser
-                    enemies_to_remove.append(enemy)  # Add the enemy to the removal list
-                    break  # Break the loop since an enemy is hit by the laser
+            for laser in enemy.lasers:
+                if laser.collision(player):
+                    player.health -= 10  # Decrease player's health by 10
+                    enemy.lasers.remove(laser)  # Remove the laser after collision
+                    if player.health <= 0:
+                        lives -= 1
+                        player.health = 100  # Reset player's health after losing a life
+                        print("Player ship hit! -1 live")
+                        print("Regenerating...")
+                        if lives <= 0:
+                            lost = True  # Set lost flag to end the game
+                            print("GAME OVER!")
+
             if collide(enemy, player):
-                lives -= 1
                 player.health -= 10  # Decrease player health
-                enemies_to_remove.append(enemy)
-                points += 100
+                enemies.remove(enemy)
+                if player.health == 0:
+                    lives -= 1
+                    print("-1 live ")
+                    player.health = 100
+                    print("regenearate")
                 player.draw(win)  # Update health bar
 
             elif enemy.y + enemy.get_height() > height_main:
-                enemies_to_remove.append(enemy)  # Add the enemy to the removal list
-
-        # Remove enemies that need to be removed
-        for enemy in enemies_to_remove:
-            enemies.remove(enemy)
-
-        # Clear the list of enemies to remove
-        enemies_to_remove.clear()
+                enemies.remove(enemy)  # Add the enemy to the removal list
 
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
 
