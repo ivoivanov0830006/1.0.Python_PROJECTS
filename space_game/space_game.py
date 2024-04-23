@@ -1,13 +1,11 @@
 import pygame
 import os
-import random
-pygame.font.init()
 
-# -------------------- game area -----------------------
+pygame.font.init()
 
 width_main, height_main = 750, 650
 win = pygame.display.set_mode((width_main, height_main))
-pygame.display.set_caption("Space Game")
+pygame.display.set_caption("Space Game Tutorial")
 
 # -------------------loading images----------------------
 
@@ -28,7 +26,6 @@ yellow_laser = pygame.image.load(os.path.join("assets", "pixel_laser_yellow.png"
 # Background
 background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background-black.png")), (width_main,
                                                                                                         height_main))
-
 # Buttons
 
 play_button = pygame.image.load(os.path.join("assets", "play_button_white.png"))
