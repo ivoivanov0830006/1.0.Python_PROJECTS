@@ -129,17 +129,16 @@ class PlayerShip(Ship):
                                                self.ship_img.get_width() * (self.health / self.max_health), 5))
 
 
-# ----------------------------------------------Enemy Ship--------------------------------------------------
 class EnemyShips(Ship):
     color_map = {
-                "red": (red_space_ship, red_laser),
-                "green": (green_space_ship, green_laser),
-                "blue": (blue_space_ship, blue_laser)
+                "red": (red_space_ship, red_laser, 120),
+                "green": (green_space_ship, green_laser, 60),
+                "blue": (blue_space_ship, blue_laser, 20)
                 }
 
-    def __init__(self, x, y, color, health=100):
+    def __init__(self, x, y, color, health=None):
         super().__init__(x, y, health)
-        self.ship_img, self.laser_img = self.color_map[color]
+        self.ship_img, self.laser_img, self.health = self.color_map[color]
         self.mask = pygame.mask.from_surface(self.ship_img)
 
     def move(self, velocity):
@@ -152,12 +151,11 @@ class EnemyShips(Ship):
             self.cool_down_counter = 1
 
 
+# -----------------------------------------------------------------------------------------------------------
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
     offset_y = obj2.y - obj1.y
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))
-# -----------------------------------------------------------------------------------------------------------
-
 # -----------------------------------------------------------------------------------------------------------
 
 
