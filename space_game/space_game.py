@@ -1,14 +1,13 @@
 import pygame
 import os
 import random
-
 pygame.font.init()
 
 width_main, height_main = 750, 650
 win = pygame.display.set_mode((width_main, height_main))
 pygame.display.set_caption("Space Game Tutorial")
 
-# ---------------------------------------Loading Images--------------------------------------------
+# -------------------loading images----------------------
 
 # Enemy ships
 red_space_ship = pygame.image.load(os.path.join("assets", "pixel_ship_red_small.png"))
@@ -48,13 +47,11 @@ class Laser:
 
     def collision(self, obj):
         return collide(self, obj)
-
-
 # ---------------------------------------------------------------------------------------------------------
 
 
 class Ship:
-    COOL_DOWN = 10     # it means 1/6 sec, because fps = 60
+    COOLDOWN = 10     # it means 1/6 sec, because fps = 60
 
     def __init__(self, x, y, health=100):
         self.x = x
@@ -71,17 +68,17 @@ class Ship:
             laser.draw(window)
 
     def move_lasers(self, velocity, obj):
-        self.cool_down()
+        self.cooldown()
         for laser in self.lasers:
             laser.move(velocity)
             if laser.off_screen(height_main):
                 self.lasers.remove(laser)
             elif laser.collision(obj):
-                # obj.health -= 10    # DECREASING PLAYERS HEALTH
+                obj.health -= 10
                 self.lasers.remove(laser)
 
-    def cool_down(self):
-        if self.cool_down_counter >= self.COOL_DOWN:
+    def cooldown(self):
+        if self.cool_down_counter >= self.COOLDOWN:
             self.cool_down_counter = 0
         elif self.cool_down_counter > 0:
             self.cool_down_counter += 1
@@ -92,17 +89,18 @@ class Ship:
     def get_height(self):
         return self.ship_img.get_height()
 
+
+# ----------------------------------------------Player Ship--------------------------------------------------
 class PlayerShip(Ship):
     def __init__(self, x, y, health=100):
-        super().__init__(x, y, health)     # de-initialisation method
+        super().__init__(x, y, health)     # deinitialization method
         self.ship_img = yellow_space_ship
         self.laser_img = yellow_laser
         self.mask = pygame.mask.from_surface(self.ship_img)  # to describe is there any collision with our object
         self.max_health = health
-        self.points = 0
 
     def move_lasers(self, velocity, objs):
-        self.cool_down()
+        self.cooldown()
         for laser in self.lasers:
             laser.move(velocity)
             if laser.off_screen(height_main):
@@ -110,16 +108,9 @@ class PlayerShip(Ship):
             else:
                 for obj in objs:
                     if laser.collision(obj):
+                        objs.remove(obj)
                         if laser in self.lasers:
                             self.lasers.remove(laser)
-                            print("Enemy ship hit!")  # Print a message when enemy ship is hit
-                            obj.health -= 20  # Decrease enemy ship's health by 20
-                            print(f"Enemy ship's health: {obj.health}")  # Print updated health
-                            if obj.health == 0:
-                                objs.remove(obj)
-                                print("Enemy ship destroyed!")  # Print a message when enemy ship is destroyed
-                                self.points += 10  # Increase points by 10 when an enemy ship is destroyed
-                                print(f"Points: {self.points}")  # Print updated points
 
     def shoot(self):
         if self.cool_down_counter == 0:
@@ -138,16 +129,17 @@ class PlayerShip(Ship):
                                                self.ship_img.get_width() * (self.health / self.max_health), 5))
 
 
+# ----------------------------------------------Enemy Ship--------------------------------------------------
 class EnemyShips(Ship):
     color_map = {
-                "red": (red_space_ship, red_laser, 120),
-                "green": (green_space_ship, green_laser, 60),
-                "blue": (blue_space_ship, blue_laser, 20)
+                "red": (red_space_ship, red_laser),
+                "green": (green_space_ship, green_laser),
+                "blue": (blue_space_ship, blue_laser)
                 }
 
-    def __init__(self, x, y, color, health=None):
+    def __init__(self, x, y, color, health=100):
         super().__init__(x, y, health)
-        self.ship_img, self.laser_img, self.health = self.color_map[color]
+        self.ship_img, self.laser_img = self.color_map[color]
         self.mask = pygame.mask.from_surface(self.ship_img)
 
     def move(self, velocity):
@@ -160,7 +152,6 @@ class EnemyShips(Ship):
             self.cool_down_counter = 1
 
 
-# -----------------------------------------------------------------------------------------------------------
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
     offset_y = obj2.y - obj1.y
@@ -168,12 +159,11 @@ def collide(obj1, obj2):
 # -----------------------------------------------------------------------------------------------------------
 
 
-def play():
+def main():
     run = True
     fps = 60
-    level = 0
-    lives = 10
-
+    level = 1
+    lives = 50
     play_font = pygame.font.SysFont("calibri", 50)
     lost_font = pygame.font.SysFont("calibri", 70)
 
@@ -181,25 +171,25 @@ def play():
     wave_length = 5
     enemy_velocity = 2
     player_velocity = 12
-    enemy_laser_velocity = 5
+    enemy_laser_velocity = 10
     laser_velocity = 15
 
     player = PlayerShip(600, 500)
 
-    clock = pygame.time.Clock()  # clock speed , see in while loop
+    clock = pygame.time.Clock()
 
     lost = False
     lost_count = 0
+
+    lost = False
 
     def redraw_window():
         win.blit(background, (0, 0))     # blit draws the background on coordinates 0, 0 (top left corner)
         lives_label = play_font.render(f"Lives: {lives}", True, (255, 255, 255))     # draw text
         level_label = play_font.render(f"Level: {level}", True, (255, 255, 255))
-        points_label = play_font.render(f"Points: {player.points}", True, (255, 255, 255))  # Draw points label
 
         win.blit(lives_label, (10, 10))
         win.blit(level_label, (width_main - level_label.get_width() - 10, 10))
-        win.blit(points_label, (width_main / 2 - points_label.get_width() / 2, 10))
 
         for every_enemy in enemies:
             every_enemy.draw(win)
@@ -207,13 +197,13 @@ def play():
         player.draw(win)
 
         if lost:
-            lost_label = lost_font.render("GAME OVER!", True, (255, 255, 255))
+            lost_label = lost_font.render("You Lost!", True, (255, 255, 255))
             win.blit(lost_label, (width_main / 2 - lost_label.get_width() / 2, 350))
 
         pygame.display.update()     # refresh display
 
     while run:
-        clock.tick(fps)   # clock speed is based on FPS and that's why the game will run on every computer the same way
+        clock.tick(fps)
         redraw_window()
 
         if lives <= 0 or player.health <= 0:
@@ -228,17 +218,17 @@ def play():
 
         if len(enemies) == 0:
             level += 1
-            wave_length += 2
+            wave_length += 5
             for i in range(wave_length):
                 enemy = EnemyShips(random.randrange(50, width_main - 100), random.randrange(-1500, -100), random.
                                    choice(["red", "blue", "green"]))
                 enemies.append(enemy)
 
-        for event in pygame.event.get():  # on every 60 sec if event occur -> do something
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:  # clicking X button will close the game
                 quit()      # if want to get us in main menu again it:     run = False
 
-# ----------------------------------------------key binds--------------------------------------------------------
+# ----------------------------------------------key binds----------------------------------------------------
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player.x - player_velocity > 0 - player.get_width()/2:  # move left + limit on left
             player.x -= player_velocity
@@ -250,80 +240,40 @@ def play():
             player.y += player_velocity
         if keys[pygame.K_SPACE]:
             player.shoot()
-# ------------------------------------------------------------------------------------------------------------------
-        # Iterate over enemies
-        for enemy in enemies:
+# ------------------------------------------------------------------------------------------------------------
+        for enemy in enemies[:]:    # made copy of list, so while we are looping there will be no issues
             enemy.move(enemy_velocity)
             enemy.move_lasers(enemy_laser_velocity, player)  # move it with velocity .... and check if hits the player
 
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
-
-            for laser in enemy.lasers:
-                if laser.collision(player):
-                    player.health -= 10  # Decrease player's health by 10
-                    enemy.lasers.remove(laser)  # Remove the laser after collision
-                    if player.health <= 0:
-                        lives -= 1
-                        player.health = 100  # Reset player's health after losing a life
-                        print("Player ship hit! -1 live")
-                        print("Regenerating...")
-                        if lives <= 0:
-                            lost = True  # Set lost flag to end the game
-                            print("GAME OVER!")
-
             if collide(enemy, player):
-                player.health -= 10  # Decrease player health
+                player.health -= 10
                 enemies.remove(enemy)
-                if player.health == 0:
-                    lives -= 1
-                    print("-1 live ")
-                    player.health = 100
-                    print("regenearate")
-                player.draw(win)  # Update health bar
-
             elif enemy.y + enemy.get_height() > height_main:
-                enemies.remove(enemy)  # Add the enemy to the removal list
+                lives -= 1
+                enemies.remove(enemy)  # removes object from the list
 
         player.move_lasers(-laser_velocity, enemies)  # checks if laser collides with enemies and - because of direction
 
-# -------------------------------------------- main menu ------------------------------------------------------------
+# --------------------------------------------Main Menu -----------------------------------------------------
 
 
 def main_menu():
-    title_font = pygame.font.SysFont("verdana", 80)
-    other_text_font = pygame.font.SysFont("calibri", 60)
+    title_font = pygame.font.SysFont("callibri", 70)
     run = True
     while run:
         win.blit(background, (0, 0))
-        menu_mouse_pos = pygame.mouse.get_pos()
-
-        title_label = title_font.render("MAIN MENU", True, (231, 231, 231))
-        win.blit(title_label, (width_main / 2 - title_label.get_width() / 2, 50))
-
-        play_but = Button(play_button, play_button_hover, pos=(250, 270), text_input=" ", font=title_font, base_color="White")
-        play_label = other_text_font.render("PLAY", True, (231, 231, 231))
-        win.blit(play_label, (350, 250))
-
-        quit_but = Button(exit_button, exit_button_hover, pos=(250, 480), text_input=" ", font=title_font, base_color="White")
-        play_label = other_text_font.render("QUIT", True, (231, 231, 231))
-        win.blit(play_label, (350, 460))
-
-        for button in [play_but, quit_but]:
-            button.update(win, menu_mouse_pos)
-
+        title_label = title_font.render("Press the mouse to begin...", True, (255, 255, 255))
+        win.blit(title_label, (width_main / 2 - title_label.get_width()/2, 350))
         pygame.display.update()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_but.check_input(menu_mouse_pos):
-                    play()
-                if quit_but.check_input(menu_mouse_pos):
-                    pygame.quit()
-                    run = False
+                main()
+    pygame.quit()
 
 
 main_menu()
+
