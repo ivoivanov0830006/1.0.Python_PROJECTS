@@ -3,9 +3,11 @@ import os
 import random
 pygame.font.init()
 
+# -------------------- game area -----------------------
+
 width_main, height_main = 750, 650
 win = pygame.display.set_mode((width_main, height_main))
-pygame.display.set_caption("Space Game Tutorial")
+pygame.display.set_caption("Space Game")
 
 # -------------------loading images----------------------
 
@@ -18,17 +20,62 @@ blue_space_ship = pygame.image.load(os.path.join("assets", "pixel_ship_blue_smal
 yellow_space_ship = pygame.image.load(os.path.join("assets", "pixel_ship_yellow.png"))
 
 # Lasers
-red_laser = pygame.image.load(os.path.join("assets", "pixel_laser_red.png"))
-green_laser = pygame.image.load(os.path.join("assets", "pixel_laser_green.png"))
-blue_laser = pygame.image.load(os.path.join("assets", "pixel_laser_blue.png"))
-yellow_laser = pygame.image.load(os.path.join("assets", "pixel_laser_yellow.png"))
+laser_images = {
+    "red": "pixel_laser_red.png",
+    "green": "pixel_laser_green.png",
+    "blue": "pixel_laser_blue.png",
+    "yellow": "pixel_laser_yellow.png"
+}
+
+laser_dict = {color: pygame.image.load(os.path.join("assets", filename)) for color, filename in laser_images.items()}
+
+red_laser = laser_dict["red"]
+green_laser = laser_dict["green"]
+blue_laser = laser_dict["blue"]
+yellow_laser = laser_dict["yellow"]
 
 # Background
 background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background-black.png")), (width_main,
                                                                                                         height_main))
 
+# Buttons
 
-# ----------------------------------------Adding Lasers----------------------------------------------------
+play_button = pygame.image.load(os.path.join("assets", "play_button_white.png"))
+exit_button = pygame.image.load(os.path.join("assets", "exit_button_white.png"))
+
+play_button_hover = pygame.image.load(os.path.join("assets", "play_button.png"))
+exit_button_hover = pygame.image.load(os.path.join("assets", "exit_button.png"))
+
+
+class Button:
+    def __init__(self, image, hover_image, pos, text_input, font, base_color):
+        self.image = image
+        self.hover_image = hover_image
+        self.x_pos = pos[0]
+        self.y_pos = pos[1]
+        self.font = font
+        self.base_color = base_color
+        self.text_input = text_input
+        self.text = self.font.render(self.text_input, True, self.base_color)
+        if self.image is None:
+            self.image = self.text
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+
+    def update(self, screen, mouse_pos):
+        if self.rect.collidepoint(mouse_pos):
+            screen.blit(self.hover_image, self.rect)
+        else:
+            screen.blit(self.image, self.rect)
+        screen.blit(self.text, self.text_rect)
+
+    def check_input(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
+                                                                                          self.rect.bottom):
+            return True
+        return False
+
+
 class Laser:
     def __init__(self, x, y, img):
         self.x = x
@@ -47,11 +94,10 @@ class Laser:
 
     def collision(self, obj):
         return collide(self, obj)
-# ---------------------------------------------------------------------------------------------------------
 
 
 class Ship:
-    COOLDOWN = 10     # it means 1/6 sec, because fps = 60
+    COOL_DOWN = 10     # it means 1/6 sec, because fps = 60
 
     def __init__(self, x, y, health=100):
         self.x = x
@@ -68,7 +114,7 @@ class Ship:
             laser.draw(window)
 
     def move_lasers(self, velocity, obj):
-        self.cooldown()
+        self.cool_down()
         for laser in self.lasers:
             laser.move(velocity)
             if laser.off_screen(height_main):
@@ -76,9 +122,13 @@ class Ship:
             elif laser.collision(obj):
                 obj.health -= 10
                 self.lasers.remove(laser)
+                if obj.health <= 0:
+                    obj.lives -= 1
+                    obj.health = 100
 
-    def cooldown(self):
-        if self.cool_down_counter >= self.COOLDOWN:
+
+    def cool_down(self):
+        if self.cool_down_counter >= self.COOL_DOWN:
             self.cool_down_counter = 0
         elif self.cool_down_counter > 0:
             self.cool_down_counter += 1
@@ -90,17 +140,18 @@ class Ship:
         return self.ship_img.get_height()
 
 
-# ----------------------------------------------Player Ship--------------------------------------------------
 class PlayerShip(Ship):
-    def __init__(self, x, y, health=100):
-        super().__init__(x, y, health)     # deinitialization method
+    def __init__(self, x, y, health=100, lives=2):
+        super().__init__(x, y, health)     # de-initialisation method
         self.ship_img = yellow_space_ship
         self.laser_img = yellow_laser
         self.mask = pygame.mask.from_surface(self.ship_img)  # to describe is there any collision with our object
         self.max_health = health
+        self.lives = lives
+        self.points = 0
 
     def move_lasers(self, velocity, objs):
-        self.cooldown()
+        self.cool_down()
         for laser in self.lasers:
             laser.move(velocity)
             if laser.off_screen(height_main):
@@ -108,9 +159,16 @@ class PlayerShip(Ship):
             else:
                 for obj in objs:
                     if laser.collision(obj):
-                        objs.remove(obj)
                         if laser in self.lasers:
                             self.lasers.remove(laser)
+                            print("Enemy ship hit!")  # Print a message when enemy ship is hit
+                            obj.health -= 20  # Decrease enemy ship's health by 20
+                            print(f"Enemy ship's health: {obj.health}")  # Print updated health
+                            if obj.health == 0:
+                                objs.remove(obj)
+                                print("Enemy ship destroyed!")  # Print a message when enemy ship is destroyed
+                                self.points += 10  # Increase points by 10 when an enemy ship is destroyed
+                                print(f"Points: {self.points}")  # Print updated points
 
     def shoot(self):
         if self.cool_down_counter == 0:
@@ -329,5 +387,6 @@ def main_menu():
 
 
 main_menu()
+
 
 
