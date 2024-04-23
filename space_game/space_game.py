@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 
 pygame.font.init()
 
@@ -7,7 +8,7 @@ width_main, height_main = 750, 650
 win = pygame.display.set_mode((width_main, height_main))
 pygame.display.set_caption("Space Game Tutorial")
 
-# -------------------loading images----------------------
+# ---------------------------------------Loading Images--------------------------------------------
 
 # Enemy ships
 red_space_ship = pygame.image.load(os.path.join("assets", "pixel_ship_red_small.png"))
@@ -26,44 +27,9 @@ yellow_laser = pygame.image.load(os.path.join("assets", "pixel_laser_yellow.png"
 # Background
 background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background-black.png")), (width_main,
                                                                                                         height_main))
-# Buttons
-
-play_button = pygame.image.load(os.path.join("assets", "play_button_white.png"))
-exit_button = pygame.image.load(os.path.join("assets", "exit_button_white.png"))
-
-play_button_hover = pygame.image.load(os.path.join("assets", "play_button.png"))
-exit_button_hover = pygame.image.load(os.path.join("assets", "exit_button.png"))
 
 
-class Button:
-    def __init__(self, image, hover_image, pos, text_input, font, base_color):
-        self.image = image
-        self.hover_image = hover_image
-        self.x_pos = pos[0]
-        self.y_pos = pos[1]
-        self.font = font
-        self.base_color = base_color
-        self.text_input = text_input
-        self.text = self.font.render(self.text_input, True, self.base_color)
-        if self.image is None:
-            self.image = self.text
-        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
-
-    def update(self, screen, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
-            screen.blit(self.hover_image, self.rect)
-        else:
-            screen.blit(self.image, self.rect)
-        screen.blit(self.text, self.text_rect)
-
-    def check_input(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
-                                                                                          self.rect.bottom):
-            return True
-        return False
-
-
+# ----------------------------------------Adding Lasers----------------------------------------------------
 class Laser:
     def __init__(self, x, y, img):
         self.x = x
@@ -82,6 +48,9 @@ class Laser:
 
     def collision(self, obj):
         return collide(self, obj)
+
+
+# ---------------------------------------------------------------------------------------------------------
 
 
 class Ship:
@@ -108,7 +77,7 @@ class Ship:
             if laser.off_screen(height_main):
                 self.lasers.remove(laser)
             elif laser.collision(obj):
-                obj.health -= 10
+                # obj.health -= 10    # DECREASING PLAYERS HEALTH
                 self.lasers.remove(laser)
 
     def cool_down(self):
@@ -122,7 +91,6 @@ class Ship:
 
     def get_height(self):
         return self.ship_img.get_height()
-
 
 class PlayerShip(Ship):
     def __init__(self, x, y, health=100):
