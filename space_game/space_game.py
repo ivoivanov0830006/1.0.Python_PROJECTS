@@ -35,7 +35,7 @@ blue_laser = laser_dict["blue"]
 yellow_laser = laser_dict["yellow"]
 
 # Background
-background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background-black.png")), (width_main,
+background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background.png")), (width_main,
                                                                                                         height_main))
 
 # Buttons
@@ -126,7 +126,6 @@ class Ship:
                     obj.lives -= 1
                     obj.health = 100
 
-
     def cool_down(self):
         if self.cool_down_counter >= self.COOL_DOWN:
             self.cool_down_counter = 0
@@ -174,7 +173,7 @@ class PlayerShip(Ship):
         if self.cool_down_counter == 0:
             laser = Laser(self.x - 15, self.y - 40, self.laser_img)
             self.lasers.append(laser)
-            self.cool_down_counter = 1
+            self.cool_down_counter = 7
 
     def draw(self, window):
         super().draw(window)
@@ -219,7 +218,7 @@ def collide(obj1, obj2):
 
 def play():
     run = True
-    fps = 60
+    fps = 90
     level = 0
 
     play_font = pygame.font.SysFont("calibri", 50)
@@ -227,10 +226,10 @@ def play():
 
     enemies = []
     wave_length = 5
-    enemy_velocity = 2
-    player_velocity = 12
-    enemy_laser_velocity = 5
-    laser_velocity = 15
+    enemy_velocity = 5
+    player_velocity = 25
+    enemy_laser_velocity = 15
+    laser_velocity = 35
 
     player = PlayerShip(600, 500)
 
@@ -239,8 +238,13 @@ def play():
     lost = False
     lost_count = 0
 
+    background_y = 0
+    background_scroll_speed = 2  # Adjust the speed of background scrolling
+
     def redraw_window():
-        win.blit(background, (0, 0))     # blit draws the background on coordinates 0, 0 (top left corner)
+        # Draw the background with scrolling effect
+        win.blit(background, (0, background_y))
+        win.blit(background, (0, background_y - background.get_height()))
         lives_label = play_font.render(f"Lives: {player.lives}", True, (255, 255, 255))     # draw text
         level_label = play_font.render(f"Level: {level}", True, (255, 255, 255))
         points_label = play_font.render(f"Points: {player.points}", True, (255, 255, 255))  # Draw points label
@@ -264,6 +268,11 @@ def play():
     while run:
         clock.tick(fps)   # clock speed is based on FPS and that's why the game will run on every computer the same way
         redraw_window()
+
+        # Background scrolling
+        background_y += background_scroll_speed
+        if background_y >= background.get_height():
+            background_y = 0
 
         if player.lives <= 0:
             lost = True
@@ -290,13 +299,13 @@ def play():
 # ----------------------------------------------key binds--------------------------------------------------------
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player.x - player_velocity > 0 - player.get_width()/2:  # move left + limit on left
-            player.x -= player_velocity
+            player.x -= player_velocity / 2
         if keys[pygame.K_RIGHT] and player.x + player_velocity < width_main - player.get_width()/2:  # move right+limit
-            player.x += player_velocity
+            player.x += player_velocity / 2
         if keys[pygame.K_UP] and player.y - player_velocity > 0:         # move up + limit on up side
-            player.y -= player_velocity
+            player.y -= player_velocity / 2
         if keys[pygame.K_DOWN] and player.y + player_velocity < height_main - player.get_height() - 15:
-            player.y += player_velocity
+            player.y += player_velocity / 2
         if keys[pygame.K_SPACE]:
             player.shoot()
 # ------------------------------------------------------------------------------------------------------------------
@@ -351,14 +360,14 @@ def play():
 
 
 def main_menu():
-    title_font = pygame.font.SysFont("verdana", 80)
+    title_font = pygame.font.SysFont("calibri", 80)
     other_text_font = pygame.font.SysFont("calibri", 60)
     run = True
     while run:
         win.blit(background, (0, 0))
         menu_mouse_pos = pygame.mouse.get_pos()
 
-        title_label = title_font.render("MAIN MENU", True, (231, 231, 231))
+        title_label = title_font.render("SPACE RUNNER", True, (231, 231, 231))
         win.blit(title_label, (width_main / 2 - title_label.get_width() / 2, 50))
 
         play_but = Button(play_button, play_button_hover, pos=(250, 270), text_input=" ", font=title_font, base_color="White")
@@ -387,6 +396,7 @@ def main_menu():
 
 
 main_menu()
+
 
 
 
