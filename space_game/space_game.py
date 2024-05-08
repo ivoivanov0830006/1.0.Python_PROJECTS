@@ -5,16 +5,16 @@ pygame.font.init()  # Initialize the font module in Pygame
 
 # -------------------- game area -----------------------
 
-width_main, height_main = 750, 650  # Set the dimensions of the game window
+width_main, height_main = 650, 720  # Set the dimensions of the game window
 win = pygame.display.set_mode((width_main, height_main))  # Create the game window
 pygame.display.set_caption("Space Game")  # Set the title of the game window
 
 # -------------------loading images----------------------
 
 # Enemy ships
-red_space_ship = pygame.image.load(os.path.join("assets", "enemy_red.png"))  # Load the image for a red enemy ship
-green_space_ship = pygame.image.load(os.path.join("assets", "enemy_green.png"))  # Load the image for a green enemy ship
-yellow_space_ship = pygame.image.load(os.path.join("assets", "enemy_yellow.png"))  # Load the image for a yellow enemy ship
+red_space_ship = pygame.image.load(os.path.join("assets", "enemy_red.png"))  # Load the image for a red enemy
+green_space_ship = pygame.image.load(os.path.join("assets", "enemy_green.png"))  # Load the image for a green enemy
+yellow_space_ship = pygame.image.load(os.path.join("assets", "enemy_yellow.png"))  # Load the image for a yellow enemy
 
 # Player ship
 blue_space_ship = pygame.image.load(os.path.join("assets", "player_blue.png"))  # Load the image for the player's ship
@@ -36,17 +36,44 @@ blue_laser = laser_dict["blue"]  # Load the blue laser image
 yellow_laser = laser_dict["yellow"]  # Load the yellow laser image
 
 # Background
-background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background.png")), (width_main, height_main))  # Load and scale the background image
+background = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background.png")),
+                                    (width_main, height_main))  # Load and scale the background image
 
-# Buttons
+# ------------------- Buttons ----------------------
 
 # Load images for play and exit buttons
-play_button = pygame.image.load(os.path.join("assets", "play_button_white.png"))
-exit_button = pygame.image.load(os.path.join("assets", "exit_button_white.png"))
+play_but = pygame.image.load(os.path.join("assets", "play_button_white.png"))
+stats_but = pygame.image.load(os.path.join("assets", "stats_button_white.png"))
+quit_but = pygame.image.load(os.path.join("assets", "exit_button_white.png"))
 
 # Load images for hover state of play and exit buttons
-play_button_hover = pygame.image.load(os.path.join("assets", "play_button.png"))
-exit_button_hover = pygame.image.load(os.path.join("assets", "exit_button.png"))
+play_but_hover = pygame.image.load(os.path.join("assets", "play_button.png"))
+stats_but_hover = pygame.image.load(os.path.join("assets", "stats_button.png"))
+quit_but_hover = pygame.image.load(os.path.join("assets", "exit_button.png"))
+
+
+# Rescaling all button images
+def scale_button_images(button_img, hover_img, width, height):
+    # Scale the button image to the desired dimensions
+    button_img_scaled = pygame.transform.scale(button_img, (width, height))
+    # Scale the hover image to the desired dimensions
+    hover_img_scaled = pygame.transform.scale(hover_img, (width, height))
+    return button_img_scaled, hover_img_scaled
+
+
+# Call the scale_button_images function for each button
+play_but, play_but_hover = scale_button_images(play_but, play_but_hover, 100, 100)
+stats_but, stats_but_hover = scale_button_images(stats_but, stats_but_hover, 100, 100)
+quit_but, quit_but_hover = scale_button_images(quit_but, quit_but_hover, 100, 100)
+
+# ------------------- Statistics ----------------------
+
+statistics = {
+    "initials": "",
+    "ship_kill_count": 0,
+    "wave_reached": 0,
+    "points": 0,
+}
 
 
 class Button:
@@ -74,7 +101,8 @@ class Button:
 
     def check_input(self, position):
         # Check if mouse click position is within button bounds
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+        if position[0] in range(self.rect.left, self.rect.right) and \
+                position[1] in range(self.rect.top, self.rect.bottom):
             return True  # Return True if mouse click is within button bounds
         return False  # Return False otherwise
 
@@ -100,7 +128,7 @@ class Laser:
 
 
 class Ship:
-    COOL_DOWN = 10  # Cooldown period for shooting lasers
+    COOL_DOWN = 10  # Cool-down period for shooting lasers
 
     def __init__(self, x, y, health=100):
         self.x = x  # X-coordinate of ship position
@@ -109,7 +137,7 @@ class Ship:
         self.ship_img = None  # Ship image
         self.laser_img = None  # Laser image
         self.lasers = []  # List to store lasers fired by the ship
-        self.cool_down_counter = 0  # Counter for cooldown period
+        self.cool_down_counter = 0  # Counter for cool-down period
 
     def draw(self, window):
         window.blit(self.ship_img, (self.x, self.y))  # Draw the ship on the window
@@ -117,7 +145,7 @@ class Ship:
             laser.draw(window)  # Draw lasers fired by the ship
 
     def move_lasers(self, velocity, obj):
-        self.cool_down()  # Handle cooldown for shooting
+        self.cool_down()  # Handle cool-down for shooting
         for laser in self.lasers:
             laser.move(velocity)  # Move lasers
             if laser.off_screen(height_main):
@@ -133,9 +161,9 @@ class Ship:
 
     def cool_down(self):
         if self.cool_down_counter >= self.COOL_DOWN:
-            self.cool_down_counter = 0  # Reset cooldown counter
+            self.cool_down_counter = 0  # Reset cool-down counter
         elif self.cool_down_counter > 0:
-            self.cool_down_counter += 1  # Increment cooldown counter
+            self.cool_down_counter += 1  # Increment cool-down counter
 
     def get_width(self):
         return self.ship_img.get_width()  # Get width of ship image
@@ -155,7 +183,7 @@ class PlayerShip(Ship):
         self.points = 0  # Player points
 
     def move_lasers(self, velocity, objs):
-        self.cool_down()  # Handle cooldown for shooting
+        self.cool_down()  # Handle cool-down for shooting
         for laser in self.lasers:
             laser.move(velocity)  # Move lasers
             if laser.off_screen(height_main):
@@ -178,7 +206,7 @@ class PlayerShip(Ship):
         if self.cool_down_counter == 0:
             laser = Laser(self.x - 15, self.y - 40, self.laser_img)  # Create a new laser object
             self.lasers.append(laser)  # Add the laser to the list of lasers fired by the player
-            self.cool_down_counter = 7  # Set cooldown counter
+            self.cool_down_counter = 7  # Set cool-down counter
 
     def draw(self, window):
         super().draw(window)  # Call superclass draw method
@@ -188,7 +216,8 @@ class PlayerShip(Ship):
         pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get_height() + 10,
                                                self.ship_img.get_width(), 5))  # Draw red health bar
         pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get_height() + 10,
-                                               self.ship_img.get_width() * (self.health / self.max_health), 5))  # Draw green health bar
+                                               self.ship_img.get_width() * (self.health / self.max_health), 5))
+        # Draw green health bar
 
 
 class EnemyShips(Ship):
@@ -210,7 +239,7 @@ class EnemyShips(Ship):
         if self.cool_down_counter == 0:
             laser = Laser(self.x - 25, self.y + 25, self.laser_img)  # Create a new laser object
             self.lasers.append(laser)  # Add the laser to the list of lasers fired by the enemy
-            self.cool_down_counter = 1  # Set cooldown counter
+            self.cool_down_counter = 1  # Set cool-down counter
 
 
 # -----------------------------------------------------------------------------------------------------------
@@ -221,10 +250,20 @@ def collide(obj1, obj2):
 # -----------------------------------------------------------------------------------------------------------
 
 
+def save_statistics():
+    with open("statistics.txt", "a") as file:
+        file.write(f"Initials: {statistics['initials']}\n")
+        file.write(f"Time Score: {statistics['time_score']} seconds\n")
+        file.write(f"Ship Kill Count: {statistics['ship_kill_count']}\n")
+        file.write(f"Wave Reached: {statistics['wave_reached']}\n")
+        file.write(f"Points: {statistics['points']}\n\n")
+
+
 def play():
     # Function to start the game
     run = True  # Flag to control the game loop
     fps = 90  # Frames per second
+    wave = 0  # Starting wave
 
     play_font = pygame.font.SysFont("calibri", 50)  # Font for in-game text
     lost_font = pygame.font.SysFont("calibri", 70)  # Font for "Game Over" text
@@ -236,7 +275,10 @@ def play():
     enemy_laser_velocity = 15  # Velocity of enemy lasers
     laser_velocity = 35  # Velocity of player lasers
 
-    player = PlayerShip(600, 500)  # Create player ship
+    start_position_x = (width_main - blue_space_ship.get_width()) / 2
+    start_position_y = (height_main - 1.5 * blue_space_ship.get_height())
+
+    player = PlayerShip(start_position_x, start_position_y)  # Create player ship
 
     clock = pygame.time.Clock()  # Clock object to control frame rate
 
@@ -251,11 +293,11 @@ def play():
         win.blit(background, (0, background_y))  # Draw the background with scrolling effect
         win.blit(background, (0, background_y - background.get_height()))
         lives_label = play_font.render(f"Lives: {player.lives}", True, (255, 255, 255))  # Draw lives label
-        level_label = play_font.render(f"Wave: {level}", True, (255, 255, 255))  # Draw wave label
+        wave_label = play_font.render(f"Wave: {wave}", True, (255, 255, 255))  # Draw wave label
         points_label = play_font.render(f"Points: {player.points}", True, (255, 255, 255))  # Draw points label
 
         win.blit(lives_label, (10, 10))  # Display lives label
-        win.blit(level_label, (width_main - level_label.get_width() - 10, 10))  # Display wave label
+        win.blit(wave_label, (width_main - wave_label.get_width() - 10, 10))  # Display wave label
         win.blit(points_label, (width_main / 2 - points_label.get_width() / 2, 10))  # Display points label
 
         for every_enemy in enemies:
@@ -290,7 +332,7 @@ def play():
                 continue  # Skip the rest of the loop if the game is lost
 
         if len(enemies) == 0:  # Check if all enemies are destroyed
-            level += 1  # Increment level
+            wave += 1  # Increment level
             wave_length += 2  # Increase wave length
             for i in range(wave_length):
                 # Spawn new enemies
@@ -361,31 +403,51 @@ def play():
                 enemies.remove(enemy)  # Remove enemy ship if it goes off-screen
 
         player.move_lasers(-laser_velocity, enemies)  # Move player lasers and check for collisions with enemies
+    save_statistics()
 
 # -------------------------------------------- main menu ------------------------------------------------------------
 
 
 def main_menu():
     # Function to display the main menu
-    title_font = pygame.font.SysFont("calibri", 80)  # Font for title
-    other_text_font = pygame.font.SysFont("calibri", 60)  # Font for other text
+
+    title_font = pygame.font.SysFont("Calibri", 80)  # Font for title
+    other_text_font = pygame.font.SysFont("Calibri", 60)  # Font for other text
     run = True  # Flag to control the main menu loop
     while run:
         win.blit(background, (0, 0))  # Display background
         menu_mouse_pos = pygame.mouse.get_pos()  # Get mouse position
 
         title_label = title_font.render("SPACE RUNNER", True, (231, 231, 231))  # Render title text
-        win.blit(title_label, (width_main / 2 - title_label.get_width() / 2, 50))  # Display title text
+        t_label_x = (width_main / 2 - title_label.get_width() / 2)
+        t_label_y = height_main * (1 / 10)
+        win.blit(title_label, (t_label_x, t_label_y))  # Display title text
 
-        play_but = Button(play_button, play_button_hover, pos=(250, 270), text_input=" ", font=title_font, base_color="White")
+        p_label_x = ((width_main / 2) + 25)
+        p_label_y = height_main * (4 / 12)
+        p_button_x = (width_main / 2) - (play_but.get_width() / 2)
+        p_button_y = p_label_y + (play_but.get_height() / 5)
+        p_button = Button(play_but, play_but_hover, pos=(p_button_x, p_button_y), text_input=" ", font=title_font, base_color="White")
         play_label = other_text_font.render("PLAY", True, (231, 231, 231))
-        win.blit(play_label, (350, 250))
+        win.blit(play_label, (p_label_x, p_label_y))
 
-        quit_but = Button(exit_button, exit_button_hover, pos=(250, 480), text_input=" ", font=title_font, base_color="White")
-        play_label = other_text_font.render("QUIT", True, (231, 231, 231))
-        win.blit(play_label, (350, 460))
+        s_label_x = ((width_main / 2) + 25)
+        s_label_y = height_main * (3.9 / 7)
+        s_button_x = (width_main / 2) - (stats_but.get_width() / 2)
+        s_button_y = s_label_y + (stats_but.get_height() / 5)
+        s_button = Button(stats_but, stats_but_hover, pos=(s_button_x, s_button_y), text_input=" ", font=title_font, base_color="White")
+        stats_label = other_text_font.render("STATS", True, (231, 231, 231))
+        win.blit(stats_label, (s_label_x, s_label_y))
 
-        for button in [play_but, quit_but]:
+        q_label_x = ((width_main / 2) + 25)
+        q_label_y = height_main * (4 / 5)
+        q_button_x = (width_main / 2) - (quit_but.get_width() / 2)
+        q_button_y = q_label_y + (quit_but.get_height() / 5)
+        q_button = Button(quit_but, quit_but_hover, pos=(q_button_x, q_button_y), text_input=" ", font=title_font, base_color="White")
+        quit_label = other_text_font.render("QUIT", True, (231, 231, 231))
+        win.blit(quit_label, (q_label_x, q_label_y))
+
+        for button in [p_button, s_button, q_button]:
             button.update(win, menu_mouse_pos)  # Update button appearance
 
         pygame.display.update()  # Update the display
@@ -395,11 +457,17 @@ def main_menu():
                 pygame.quit()
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_but.check_input(menu_mouse_pos):
+                if p_button.check_input(menu_mouse_pos):
                     play()  # Start the game if "Play" button is clicked
-                if quit_but.check_input(menu_mouse_pos):
+                # if s_button.check_input(menu_mouse_pos):
+                #     stats()
+                if q_button.check_input(menu_mouse_pos):
                     pygame.quit()
                     run = False
+
+
+main_menu()  # Display the main menu
+
 
 
 main_menu()  # Display the main menu
