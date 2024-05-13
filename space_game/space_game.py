@@ -2,6 +2,7 @@ import pygame  # Import the Pygame library for game development
 import os  # Import the os module for operating system functions
 import random  # Import the random module for generating random numbers
 import sys
+import pygame.transform
 pygame.font.init()  # Initialize the font module in Pygame
 
 # -------------------- game area -----------------------
@@ -69,12 +70,7 @@ quit_but, quit_but_hover = scale_button_images(quit_but, quit_but_hover)
 
 # ------------------- Statistics ----------------------
 
-statistics = {
-    "initials": "",
-    "ship_kill_count": 0,
-    "wave_reached": 0,
-    "points": 0,
-}
+statistics = {"initials": "", "points": 0}
 
 
 class Button:
@@ -194,14 +190,14 @@ class PlayerShip(Ship):
                     if laser.collision(obj):
                         if laser in self.lasers:
                             self.lasers.remove(laser)  # Remove laser after collision
-                            print("Enemy ship hit!")  # Print a message when enemy ship is hit
+                            # print("Enemy ship hit!")  # Print a message when enemy ship is hit
                             obj.health -= 20  # Decrease enemy ship's health
-                            print(f"Enemy ship's health: {obj.health}")  # Print updated health
+                            # print(f"Enemy ship's health: {obj.health}")  # Print updated health
                             if obj.health == 0:
                                 objs.remove(obj)  # Remove destroyed enemy ship
-                                print("Enemy ship destroyed!")  # Print a message when enemy ship is destroyed
+                                # print("Enemy ship destroyed!")  # Print a message when enemy ship is destroyed
                                 self.points += 10  # Increase points when an enemy ship is destroyed
-                                print(f"Points: {self.points}")  # Print updated points
+                                # print(f"Points: {self.points}")  # Print updated points
 
     def shoot(self):
         if self.cool_down_counter == 0:
@@ -248,16 +244,148 @@ def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x  # Calculate offset in x direction
     offset_y = obj2.y - obj1.y  # Calculate offset in y direction
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))  # Check for collision between two objects
+
+
 # -----------------------------------------------------------------------------------------------------------
+def blur_screen(surface, blur_factor, max_blur_factor):
+    # Calculate the current blur level based on the max_blur_factor and the desired blur_factor
+    current_blur_factor = min(blur_factor, max_blur_factor)
+
+    # Calculate the scaling factors for the blur
+    scaled_width = int(surface.get_width() / current_blur_factor)
+    scaled_height = int(surface.get_height() / current_blur_factor)
+    scaled_surface = pygame.transform.smoothscale(surface, (scaled_width, scaled_height)) # Scale down the surface
+
+    # Scale it back up to the original size
+    scaled_surface = pygame.transform.smoothscale(scaled_surface, (surface.get_width(), surface.get_height()))
+    surface.blit(scaled_surface, (0, 0)) # Draw the scaled surface onto the original surface
+    return current_blur_factor
 
 
-def save_statistics():
+# -----------------------------------------------------------------------------------------------------------
+def save(initials, points):
     with open("statistics.txt", "a") as file:
-        file.write(f"Initials: {statistics['initials']}\n")
-        file.write(f"Time Score: {statistics['time_score']} seconds\n")
-        file.write(f"Ship Kill Count: {statistics['ship_kill_count']}\n")
-        file.write(f"Wave Reached: {statistics['wave_reached']}\n")
-        file.write(f"Points: {statistics['points']}\n\n")
+        file.write(f"{initials} - {points}\n")
+
+# -------------------------------------------- main menu ------------------------------------------------------------
+
+
+def initial_screen():
+    # Function to display the initial screen before entering the main menu
+    intro_font = pygame.font.SysFont("Calibri", 40)  # Font for introductory text
+    input_font = pygame.font.SysFont("Calibri", 30)  # Font for input field
+    intro_text = intro_font.render("Welcome to Space Runner!", True, (255, 255, 255))  # Render introductory text
+    initials_text = input_font.render("Enter Your Initials:", True, (255, 255, 255))  # Render initials input prompt
+
+    # Calculate position to center the text on the screen
+    intro_text_x = (width_main / 2 - intro_text.get_width() / 2)
+    intro_text_y = (height_main / 2 - intro_text.get_height() / 2)
+    initials_text_x = (width_main / 2 - initials_text.get_width() / 2)
+    initials_text_y = (height_main / 2 + 50)
+
+    initials = ""  # Variable to store player's initials
+    fps = 25
+    countdown_timer = 10 * fps  # 10 seconds converted to frames
+    run_intro = True  # Flag to control the introductory screen loop
+
+    while run_intro:
+        win.blit(background, (0, 0))  # Display background
+        win.blit(intro_text, (intro_text_x, intro_text_y))  # Display introductory text
+        win.blit(initials_text, (initials_text_x, initials_text_y))  # Display initials input prompt
+
+        # Render player's initials as they type
+        initials_rendered = input_font.render(initials.upper(), True, (255, 255, 255))
+        win.blit(initials_rendered, (initials_text_x, initials_text_y + 40))
+
+        pygame.display.update()  # Update the display
+        countdown_timer -= 1  # Decrease the timer each frame
+
+        if countdown_timer <= 0:  # Check if the timer has reached 0
+            pygame.quit()  # Quit game if the timer has reached 0
+            sys.exit()
+        if countdown_timer == 1:
+            print("BYE BYE")
+            max_blur_factor = 70
+            current_blur_factor = 1
+            while current_blur_factor <= max_blur_factor:
+                current_blur_factor += 1 # Increase the blur gradually
+                blur_screen(win, current_blur_factor, max_blur_factor) # Draw the scene with the current blur level
+                pygame.display.flip() # Update the display
+                pygame.time.delay(50)  # Delay to control the speed of the blur transition
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    initials = initials[:-1]  # Remove the last character if Backspace is pressed
+                    countdown_timer = 10 * fps  # Reset timer on input
+
+                elif event.unicode.isalpha() and len(initials) < 3:  # Checks if username is letters only and 3 chars
+                    initials += event.unicode.upper()  # Add typed uppercase character to initials string
+                    countdown_timer = 10 * fps  # Reset timer on input
+
+                if len(initials) == 3:
+                    statistics["initials"] = initials
+                    run_intro = False  # Exit the loop if initials are entered
+    return initials
+
+
+def main_menu():
+    if initial_screen():
+
+        title_font = pygame.font.SysFont("Calibri", 80)  # Font for title
+        other_text_font = pygame.font.SysFont("Calibri", 60)  # Font for other text
+        run = True  # Flag to control the main menu loop
+
+        while run:
+            win.blit(background, (0, 0))  # Display background
+            menu_mouse_pos = pygame.mouse.get_pos()  # Get mouse position
+
+            title_label = title_font.render("SPACE RUNNER", True, (231, 231, 231))  # Render title text
+            t_label_x = (width_main / 2 - title_label.get_width() / 2)
+            t_label_y = height_main * (1 / 10)
+            win.blit(title_label, (t_label_x, t_label_y))  # Display title text
+
+            p_label_x = ((width_main / 2) + 25)
+            p_label_y = height_main * (4 / 12)
+            p_button_x = (width_main / 2) - (play_but.get_width() / 2)
+            p_button_y = p_label_y + (play_but.get_height() / 5)
+            p_button = Button(play_but, play_but_hover, pos=(p_button_x, p_button_y), text_input=" ", font=title_font, base_color="White")
+            play_label = other_text_font.render("PLAY", True, (231, 231, 231))
+            win.blit(play_label, (p_label_x, p_label_y))
+
+            s_label_x = ((width_main / 2) + 25)
+            s_label_y = height_main * (3.9 / 7)
+            s_button_x = (width_main / 2) - (stats_but.get_width() / 2)
+            s_button_y = s_label_y + (stats_but.get_height() / 5)
+            s_button = Button(stats_but, stats_but_hover, pos=(s_button_x, s_button_y), text_input=" ", font=title_font, base_color="White")
+            stats_label = other_text_font.render("STATS", True, (231, 231, 231))
+            win.blit(stats_label, (s_label_x, s_label_y))
+
+            q_label_x = ((width_main / 2) + 25)
+            q_label_y = height_main * (4 / 5)
+            q_button_x = (width_main / 2) - (quit_but.get_width() / 2)
+            q_button_y = q_label_y + (quit_but.get_height() / 5)
+            q_button = Button(quit_but, quit_but_hover, pos=(q_button_x, q_button_y), text_input=" ", font=title_font, base_color="White")
+            quit_label = other_text_font.render("QUIT", True, (231, 231, 231))
+            win.blit(quit_label, (q_label_x, q_label_y))
+
+            for button in [p_button, s_button, q_button]:
+                button.update(win, menu_mouse_pos)  # Update button appearance
+
+            pygame.display.update()  # Update the display
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if p_button.check_input(menu_mouse_pos):
+                        play()  # Start the game if "Play" button is clicked
+                    # if s_button.check_input(menu_mouse_pos):
+                    #     stats()
+                    if q_button.check_input(menu_mouse_pos):
+                        pygame.quit()
+                        run = False
 
 
 def play():
@@ -404,123 +532,8 @@ def play():
                 enemies.remove(enemy)  # Remove enemy ship if it goes off-screen
 
         player.move_lasers(-laser_velocity, enemies)  # Move player lasers and check for collisions with enemies
-    save_statistics()
-
-# -------------------------------------------- main menu ------------------------------------------------------------
+    save(statistics["initials"], player.points)
 
 
-def initial_screen():
-    # Function to display the initial screen before entering the main menu
-    intro_font = pygame.font.SysFont("Calibri", 40)  # Font for introductory text
-    input_font = pygame.font.SysFont("Calibri", 30)  # Font for input field
-    intro_text = intro_font.render("Welcome to Space Runner!", True, (255, 255, 255))  # Render introductory text
-    initials_text = input_font.render("Enter Your Initials:", True, (255, 255, 255))  # Render initials input prompt
-
-    # Calculate position to center the text on the screen
-    intro_text_x = (width_main / 2 - intro_text.get_width() / 2)
-    intro_text_y = (height_main / 2 - intro_text.get_height() / 2)
-    initials_text_x = (width_main / 2 - initials_text.get_width() / 2)
-    initials_text_y = (height_main / 2 + 50)
-
-    initials = ""  # Variable to store player's initials
-    fps_clock = pygame.time.Clock()
-    fps = 25
-    countdown_timer = 10 * fps  # 10 seconds converted to frames
-    run_intro = True  # Flag to control the introductory screen loop
-    credentials_ready = False
-    while run_intro:
-        win.blit(background, (0, 0))  # Display background
-        win.blit(intro_text, (intro_text_x, intro_text_y))  # Display introductory text
-        win.blit(initials_text, (initials_text_x, initials_text_y))  # Display initials input prompt
-
-        # Render player's initials as they type
-        initials_rendered = input_font.render(initials.upper(), True, (255, 255, 255))
-        win.blit(initials_rendered, (initials_text_x, initials_text_y + 40))
-
-        pygame.display.update()  # Update the display
-
-        countdown_timer -= 1  # Decrease the timer each frame
-        ###########################print(countdown_timer)
-        if countdown_timer <= 0:  # Check if the timer has reached 0
-            pygame.quit()  # Quit game if the timer has reached 0
-            sys.exit()
-        if countdown_timer == 100:
-            print("BYE BYE")
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    initials = initials[:-1]  # Remove the last character if Backspace is pressed
-                    countdown_timer = 10 * fps  # Reset timer on input
-
-                elif event.unicode.isalpha() and len(initials) < 3:  # Checks if username is letters only and 3 chars
-                    initials += event.unicode.upper()  # Add typed uppercase character to initials string
-                    countdown_timer = 10 * fps  # Reset timer on input
-
-                if len(initials) == 3:
-                    credentials_ready = True
-
-        if credentials_ready:
-            print(initials)
-            return initials
-
-
-def main_menu():
-    if initial_screen():
-
-        title_font = pygame.font.SysFont("Calibri", 80)  # Font for title
-        other_text_font = pygame.font.SysFont("Calibri", 60)  # Font for other text
-        run = True  # Flag to control the main menu loop
-        while run:
-            win.blit(background, (0, 0))  # Display background
-            menu_mouse_pos = pygame.mouse.get_pos()  # Get mouse position
-
-            title_label = title_font.render("SPACE RUNNER", True, (231, 231, 231))  # Render title text
-            t_label_x = (width_main / 2 - title_label.get_width() / 2)
-            t_label_y = height_main * (1 / 10)
-            win.blit(title_label, (t_label_x, t_label_y))  # Display title text
-
-            p_label_x = ((width_main / 2) + 25)
-            p_label_y = height_main * (4 / 12)
-            p_button_x = (width_main / 2) - (play_but.get_width() / 2)
-            p_button_y = p_label_y + (play_but.get_height() / 5)
-            p_button = Button(play_but, play_but_hover, pos=(p_button_x, p_button_y), text_input=" ", font=title_font, base_color="White")
-            play_label = other_text_font.render("PLAY", True, (231, 231, 231))
-            win.blit(play_label, (p_label_x, p_label_y))
-
-            s_label_x = ((width_main / 2) + 25)
-            s_label_y = height_main * (3.9 / 7)
-            s_button_x = (width_main / 2) - (stats_but.get_width() / 2)
-            s_button_y = s_label_y + (stats_but.get_height() / 5)
-            s_button = Button(stats_but, stats_but_hover, pos=(s_button_x, s_button_y), text_input=" ", font=title_font, base_color="White")
-            stats_label = other_text_font.render("STATS", True, (231, 231, 231))
-            win.blit(stats_label, (s_label_x, s_label_y))
-
-            q_label_x = ((width_main / 2) + 25)
-            q_label_y = height_main * (4 / 5)
-            q_button_x = (width_main / 2) - (quit_but.get_width() / 2)
-            q_button_y = q_label_y + (quit_but.get_height() / 5)
-            q_button = Button(quit_but, quit_but_hover, pos=(q_button_x, q_button_y), text_input=" ", font=title_font, base_color="White")
-            quit_label = other_text_font.render("QUIT", True, (231, 231, 231))
-            win.blit(quit_label, (q_label_x, q_label_y))
-
-            for button in [p_button, s_button, q_button]:
-                button.update(win, menu_mouse_pos)  # Update button appearance
-
-            pygame.display.update()  # Update the display
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    run = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if p_button.check_input(menu_mouse_pos):
-                        play()  # Start the game if "Play" button is clicked
-                    # if s_button.check_input(menu_mouse_pos):
-                    #     stats()
-                    if q_button.check_input(menu_mouse_pos):
-                        pygame.quit()
-                        run = False
-
-
-main_menu()  # Display the main menu
+if __name__ == "__main__":
+    main_menu()
